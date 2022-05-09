@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.AttributeContainer;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -23,7 +24,7 @@ import net.minecraft.entity.damage.DamageSource;
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin {
 	private static final Multimap<EntityAttribute, EntityAttributeModifier> ATTRIBUTE_ADDITON;
-    private static final UUID ATTACK_SPEED_MODIFIER_ID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
+    private static final UUID ATTACK_SPEED_MODIFIER_ID = UUID.fromString("FA233E1C-4180-4865-B01B-000000000000");
 	
 	static {
 		ImmutableMultimap.Builder<EntityAttribute, EntityAttributeModifier> builder = ImmutableMultimap.builder();
@@ -37,6 +38,21 @@ public class LivingEntityMixin {
 		);
 
 		ATTRIBUTE_ADDITON = builder.build();
+	}
+
+	@Inject(at = @At("HEAD"), method = "onAttacking")
+	private void onAttacking(Entity target, CallbackInfo ci) {
+		if (target instanceof LivingEntity && ((LivingEntity)(Object)this).getAttributes().hasAttribute(EntityAttributes.GENERIC_ATTACK_SPEED)) {
+			double speed = ((LivingEntity)(Object)this).getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED) - 256.0;
+
+			System.out.println("Attack Speed: " + speed);
+			
+			((LivingEntity) target).hurtTime = (int) (
+				47 * Math.pow(2, -speed)
+			);
+
+			System.out.println("HurtTime: " + ((LivingEntity) target).hurtTime);
+		}
 	}
 
 	@Shadow @Final
@@ -53,44 +69,4 @@ public class LivingEntityMixin {
 			cir.setReturnValue(false);
 		} 
 	}
-
-	// @ModifyArg(
-	// 	at = @At(
-	// 		value = "INVOKE", 
-	// 		target = "Lnet/minecraft/entity/attribute/AttributeContainer;removeModifiers"
-	// 	), 
-	// 	method = "getEquipmentChanges",
-	// 	index = 0
-	// )
-	// private Multimap<EntityAttribute, EntityAttributeModifier> getEquipmentChanges_ModifyArg_removeModifiers(Multimap<EntityAttribute, EntityAttributeModifier> map) {
-	// 	ImmutableMultimap.Builder<EntityAttribute, EntityAttributeModifier> builder = ImmutableMultimap.builder();
-
-	// 	map.forEach((attribute, attributeModifier)-> {
-	// 		if (attribute != EntityAttributes.GENERIC_ATTACK_SPEED) {
-	// 			builder.put(attribute, attributeModifier);
-	// 		}
-	// 	});
-
-	// 	return builder.build();
-	// }
-
-	// @ModifyArg(
-	// 	at = @At(
-	// 		value = "INVOKE", 
-	// 		target = "Lnet/minecraft/entity/attribute/AttributeContainer;addTemporaryModifiers"
-	// 	), 
-	// 	method = "getEquipmentChanges",
-	// 	index = 0
-	// )
-	// private Multimap<EntityAttribute, EntityAttributeModifier> getEquipmentChanges_ModifyArg_addTemporaryModifiers(Multimap<EntityAttribute, EntityAttributeModifier> map) {
-	// 	ImmutableMultimap.Builder<EntityAttribute, EntityAttributeModifier> builder = ImmutableMultimap.builder();
-
-	// 	map.forEach((attribute, attributeModifier)-> {
-	// 		if (attribute != EntityAttributes.GENERIC_ATTACK_SPEED) {
-	// 			builder.put(attribute, attributeModifier);
-	// 		}
-	// 	});
-
-	// 	return builder.build();
-	// }
 }

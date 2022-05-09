@@ -4,8 +4,7 @@
   "package": "fireopal.firecombat.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "LivingEntityMixin",
-    "ItemStackMixin"
+    "LivingEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
