@@ -5,8 +5,6 @@ import java.util.UUID;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
-import fireopal.firecombat.FireCombat;
-
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,9 +20,6 @@ import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.EntityDamageSource;
-import net.minecraft.entity.damage.ProjectileDamageSource;
-import net.minecraft.entity.player.PlayerEntity;
 
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin {
@@ -70,22 +65,7 @@ public class LivingEntityMixin {
 
 	@Inject(at = @At("HEAD"), method = "damage", cancellable = true)
 	private void damage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
-		FireCombat.LOGGER.info("DamageSource: " + source);
-		FireCombat.LOGGER.info("DamageSourceClass: " + source.getClass().toString());
-
-		if (source instanceof EntityDamageSource) {
-			FireCombat.LOGGER.info("((EntityDamageSource)source).getAttacker() instanceof PlayerEntity = " + (((EntityDamageSource)source).getAttacker() instanceof PlayerEntity));
-			FireCombat.LOGGER.info("" + ((EntityDamageSource)source).getAttacker());
-			FireCombat.LOGGER.info("" + ((EntityDamageSource)source).getAttacker().getClass());
-		}
-
-		if (
-			source instanceof EntityDamageSource 
-			&& !(source instanceof ProjectileDamageSource) 
-			&& ((EntityDamageSource)source).getAttacker() instanceof PlayerEntity
-			
-			&& Math.abs(((LivingEntity)(Object)this).hurtTime) > 0
-		) {
+		if (Math.abs(((LivingEntity)(Object)this).hurtTime) > 0) {
 			cir.setReturnValue(false);
 		} 
 	}
